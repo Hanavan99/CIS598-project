@@ -1,0 +1,29 @@
+unit kg;
+unit m;
+unit s;
+unit g = 0.001 kg;
+unit cm = 0.01 m;
+
+enum material {
+	property density : kg/m^3;
+
+	value PLA(1.24 g/cm^3);
+	value ABS(1.04 g/cm^3);
+}
+
+assembly rocket {
+	assembly body {
+		property radius : m = 4 cm;
+	}
+
+	assembly nosecone {
+		property mat : material;
+		property length : m;
+		property mass : kg = mat.density * (pi * length * rocket.body.radius ^ 2) / 3;
+	}
+}
+
+summarize mat;
+summarize length;
+
+solve rocket.nosecone.mass = 300 g;
