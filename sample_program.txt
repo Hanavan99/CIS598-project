@@ -1,6 +1,7 @@
 unit kg;
 unit m;
 unit s;
+unit a = 2 4 + 5;
 unit g = 0.001 kg;
 unit cm = 0.01 m;
 

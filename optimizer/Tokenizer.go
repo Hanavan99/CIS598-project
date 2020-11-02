@@ -78,6 +78,12 @@ func Tokenize(str string) *list.List {
 			curToken += string(c)
 		} else if c == '-' {
 			// could be negative number or subtraction
+			if tokenType != 0 {
+				tokens.PushBack(Token{tokenType, curTokenPos, curToken})
+			}
+			tokens.PushBack(Token{TokenOperatorSubtract, i, string(c)})
+			curToken = ""
+			tokenType = 0
 		} else if c == '=' {
 			if tokenType != 0 {
 				tokens.PushBack(Token{tokenType, curTokenPos, curToken})
@@ -156,9 +162,9 @@ func Tokenize(str string) *list.List {
 			curToken = ""
 			tokenType = 0
 		} else if c == ',' {
-			if tokenType == TokenNumber {
+			/*if tokenType == TokenNumber {
 				curToken += string(c)
-			} else {
+			} else*/{
 				if tokenType != 0 {
 					tokens.PushBack(Token{tokenType, curTokenPos, curToken})
 				}
@@ -184,4 +190,13 @@ func Tokenize(str string) *list.List {
 
 	return tokens
 
+}
+
+// IsOperator returns whether or not the given token ID is an operator
+func IsOperator(token int) bool {
+	switch token {
+	case TokenOperatorAdd, TokenOperatorSubtract, TokenOperatorMultiply, TokenOperatorDivide, TokenOperatorExponent:
+		return true
+	}
+	return false
 }
