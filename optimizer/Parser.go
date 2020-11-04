@@ -15,6 +15,10 @@ func tokenPos(token *list.Element) int {
 	return token.Value.(Token).Position
 }
 
+func tokenSPos(token *list.Element) string {
+	return strconv.Itoa(tokenPos(token))
+}
+
 func tokenContent(token *list.Element) string {
 	return token.Value.(Token).Content
 }
@@ -39,12 +43,133 @@ func Parse(tokens *list.List, funcDefs map[string]int) (ParseTreeRoot, error) {
 			}
 			tree.AddUnit(unit)
 			break
+		case "enum":
+			_token, enum, err := parseEnum(token.Next(), tree)
+			token = _token
+			if err != nil {
+				return tree, err
+			}
+			tree.AddEnum(enum)
+			break
 		}
 		token = token.Next()
 	}
 
 	return tree, nil
 
+}
+
+func parseEnum(token *list.Element, tree ParseTreeRoot) (*list.Element, ParseTreeEnum, error) {
+	// check if the next token is an identifier (the name of the enum)
+	if tokenID(token) == TokenIdentifier {
+		var name = tokenContent(token)
+		token = token.Next()
+
+		// check if the next token is a "{"
+		if tokenID(token) == TokenBraceOpen {
+			token = token.Next()
+			var props = make([]ParseTreeProperty, 0)
+			var values = make(map[string]ParseTreeEnumValue)
+
+			// keep reading in properties/values until we hit a "}"
+			for tokenID(token) != TokenBraceClose {
+
+				// check to see if we hit a "property" or "value" keyword
+				if tokenID(token) == TokenIdentifier {
+					switch tokenContent(token) {
+					case "property":
+						token = token.Next()
+
+						// check to see if the next token is an identifier (the name of the property)
+						if tokenID(token) == TokenIdentifier {
+							propName := tokenContent(token)
+							token = token.Next()
+
+							// check to see if the next token is a ":"
+							if tokenID(token) == TokenUnitSeparator {
+								token = token.Next()
+								_token, units, err := ParseExpression(token, tree, nil)
+								token = _token
+								if err != nil {
+									return token, ParseTreeEnum{}, err
+								}
+								fmt.Println(units.ToString())
+
+								// check to see if there is an ending ";"
+								if tokenID(token) == TokenStatementTerminator {
+									props = append(props, ParseTreeProperty{propName, nil, units})
+									fmt.Printf("declared property \"%s\" in enum \"%s\"\n", propName, name)
+								} else {
+									return token, ParseTreeEnum{}, errors.New("expected \";\"")
+								}
+							} else {
+								return token, ParseTreeEnum{}, errors.New("expected \":\"")
+							}
+						} else {
+							return token, ParseTreeEnum{}, errors.New("property name expected")
+						}
+						break
+					case "value":
+						token = token.Next()
+
+						// check to see if the next token is an identifier (the name of the value)
+						if tokenID(token) == TokenIdentifier {
+							valueName := tokenContent(token)
+							valueValues := make([]float64, len(props))
+							valueUnits := make([]ParseTreeExpression, len(props))
+							token = token.Next()
+
+							// check to see if the next token is a "("
+							if tokenID(token) == TokenParenthesisOpen {
+								token = token.Next()
+
+								// keep reading values until we hit a ")"
+								for i := 0; tokenID(token) != TokenParenthesisClose; i++ {
+
+									// check to see if the next token is a number
+									if tokenID(token) == TokenNumber {
+										v, _ := strconv.ParseFloat(tokenContent(token), 64)
+										valueValues[i] = v
+
+										token = token.Next()
+										newToken, units, err := ParseExpression(token, tree, nil)
+										token = newToken
+										if err != nil {
+											return token, ParseTreeEnum{}, err
+										}
+
+										valueUnits[i] = units
+									} else {
+										return token, ParseTreeEnum{}, errors.New("number expected at position " + tokenSPos(token) + tokenContent(token))
+									}
+
+									token = token.Next()
+								}
+
+								token = token.Next()
+								if tokenID(token) == TokenStatementTerminator {
+									values[valueName] = ParseTreeEnumValue{valueName, valueValues, valueUnits}
+									fmt.Printf("declared value \"%s\"\n", valueName)
+								} else {
+									return token, ParseTreeEnum{}, errors.New("\";\" expected at position " + tokenSPos(token))
+								}
+
+							}
+						}
+						break
+					}
+				} else {
+					return token, ParseTreeEnum{}, errors.New("property or value expected at position " + tokenSPos(token) + tokenContent(token))
+				}
+
+				token = token.Next()
+			}
+			fmt.Printf("declared enum \"%s\"\n", name)
+			return token, ParseTreeEnum{name, props, values}, nil
+		}
+		return token, ParseTreeEnum{}, errors.New("expected {")
+	}
+	return token, ParseTreeEnum{}, errors.New("identifier expected but \"" + tokenContent(token) + "\" given")
 }
 
 func parseUnit(token *list.Element, tree ParseTreeRoot, funcDefs map[string]int) (*list.Element, ParseTreeUnit, error) {
@@ -111,6 +236,26 @@ func BuildExpression(outputQueue *Stack, funcDefs map[string]int) (ParseTreeExpr
 			return nil, err
 		}
 		return ParseTreeExpressionAdd{left, right}, nil
+	case TokenOperatorDivide:
+		right, err := BuildExpression(outputQueue, funcDefs)
+		if err != nil {
+			return nil, err
+		}
+		left, err := BuildExpression(outputQueue, funcDefs)
+		if err != nil {
+			return nil, err
+		}
+		return ParseTreeExpressionDivide{left, right}, nil
+	case TokenOperatorExponent:
+		exponent, err := BuildExpression(outputQueue, funcDefs)
+		if err != nil {
+			return nil, err
+		}
+		base, err := BuildExpression(outputQueue, funcDefs)
+		if err != nil {
+			return nil, err
+		}
+		return ParseTreeExpressionExponent{base, exponent}, nil
 	}
 	return nil, errors.New("invalid stack")
 }

@@ -1,7 +1,5 @@
 package optimizer
 
-import "fmt"
-
 type ParseTreeRoot struct {
 	children []ParseTree
 }
@@ -20,5 +18,8 @@ func (ptr ParseTreeRoot) Children() []ParseTree {
 
 func (ptr *ParseTreeRoot) AddUnit(unit ParseTreeUnit) {
 	ptr.children = append(ptr.children, unit)
-	fmt.Println(len(ptr.children))
+}
+
+func (ptr *ParseTreeRoot) AddEnum(enum ParseTreeEnum) {
+	ptr.children = append(ptr.children, enum)
 }

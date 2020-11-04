@@ -1,14 +1,11 @@
 package optimizer
 
 type ParseTreeProperty struct {
-	name  string
-	value ParseTreeExpression
+	Name  string
+	Value ParseTreeExpression
+	Units ParseTreeExpression
 }
 
 func (ptp ParseTreeProperty) Children() []ParseTree {
-	return []ParseTree{ptp.value}
-}
-
-func (ptp ParseTreeProperty) HasConstantValue() bool {
-	return true
+	return []ParseTree{ptp.Value}
 }

@@ -27,6 +27,7 @@ const TokenStatementTerminator = 15
 const TokenComma = 16
 const TokenSpace = 17
 const TokenComment = 18
+const TokenUnitSeparator = 19
 
 // Token a token from the program
 type Token struct {
@@ -177,6 +178,13 @@ func Tokenize(str string) *list.List {
 				tokens.PushBack(Token{tokenType, curTokenPos, curToken})
 			}
 			tokens.PushBack(Token{TokenStatementTerminator, i, string(c)})
+			curToken = ""
+			tokenType = 0
+		} else if c == ':' {
+			if tokenType != 0 {
+				tokens.PushBack(Token{tokenType, curTokenPos, curToken})
+			}
+			tokens.PushBack(Token{TokenUnitSeparator, i, string(c)})
 			curToken = ""
 			tokenType = 0
 		} else {

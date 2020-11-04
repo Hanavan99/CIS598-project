@@ -8,8 +8,8 @@ unit cm = 0.01 m;
 enum material {
 	property density : kg/m^3;
 
-	value PLA(1.24 g/cm^3);
-	value ABS(1.04 g/cm^3);
+	value PLA(1.24 g/cm^3;);
+	value ABS(1.04 g/cm^3;);
 }
 
 assembly rocket {
