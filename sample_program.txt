@@ -26,4 +26,4 @@ assembly rocket {
 summarize rocket.nosecone.mat;
 summarize rocket.nosecone.length;
 
-solve rocket.nosecone.mass = 300 g;
+solve set rocket.nosecone.mass = 300 g;

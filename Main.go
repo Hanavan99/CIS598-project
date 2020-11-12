@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"optimizer"
+	"log"
 )
 
 func main() {
@@ -25,7 +26,7 @@ func main() {
 	fmt.Println("==========  PARSER  OUTPUT  ==========")
 	tree, err := optimizer.Parse(tokens, funcDefs)
 	if err != nil {
-		fmt.Println("error: " + err.Error())
+		log.Fatalf("parse error: %s\n", err.Error())
 	}
 
 	for i, v := range tree.Children() {

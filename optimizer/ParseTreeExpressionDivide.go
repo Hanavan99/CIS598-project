@@ -1,5 +1,7 @@
 package optimizer
 
+import "fmt"
+
 type ParseTreeExpressionDivide struct {
 	left  ParseTreeExpression
 	right ParseTreeExpression
@@ -18,5 +20,5 @@ func (pted ParseTreeExpressionDivide) HasKnownValue(env Environment) bool {
 }
 
 func (pted ParseTreeExpressionDivide) ToString() string {
-	return pted.left.ToString() + " / " + pted.right.ToString()
+	return fmt.Sprintf("(%s / %s)", pted.left.ToString(), pted.right.ToString())
 }

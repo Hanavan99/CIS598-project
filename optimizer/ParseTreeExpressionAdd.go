@@ -1,5 +1,7 @@
 package optimizer
 
+import "fmt"
+
 type ParseTreeExpressionAdd struct {
 	left  ParseTreeExpression
 	right ParseTreeExpression
@@ -18,5 +20,5 @@ func (ptea ParseTreeExpressionAdd) HasKnownValue(env Environment) bool {
 }
 
 func (ptea ParseTreeExpressionAdd) ToString() string {
-	return ptea.left.ToString() + " + " + ptea.right.ToString()
+	return fmt.Sprintf("(%s + %s)", ptea.left.ToString(), ptea.right.ToString())
 }

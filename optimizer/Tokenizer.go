@@ -7,27 +7,27 @@ import (
 //	"strconv"
 
 // TokenIdentifier indicates the token is an identifier
-const TokenIdentifier = 1
+const TokenIdentifier int = 1
 
 // TokenNumber indicates the token is a number
-const TokenNumber = 2
-const TokenOperatorEquals = 3
-const TokenOperatorAdd = 4
-const TokenOperatorSubtract = 5
-const TokenOperatorMultiply = 6
-const TokenOperatorDivide = 7
-const TokenOperatorExponent = 8
-const TokenBraceOpen = 9
-const TokenBraceClose = 10
-const TokenParenthesisOpen = 11
-const TokenParenthesisClose = 12
-const TokenBracketOpen = 13
-const TokenBracketClose = 14
-const TokenStatementTerminator = 15
-const TokenComma = 16
-const TokenSpace = 17
-const TokenComment = 18
-const TokenUnitSeparator = 19
+const TokenNumber int = 2
+const TokenOperatorEquals int = 3
+const TokenOperatorAdd int = 4
+const TokenOperatorSubtract int = 5
+const TokenOperatorMultiply int = 6
+const TokenOperatorDivide int = 7
+const TokenOperatorExponent int = 8
+const TokenBraceOpen int = 9
+const TokenBraceClose int = 10
+const TokenParenthesisOpen int = 11
+const TokenParenthesisClose int = 12
+const TokenBracketOpen int = 13
+const TokenBracketClose int = 14
+const TokenStatementTerminator int = 15
+const TokenComma int = 16
+const TokenSpace int = 17
+const TokenComment int = 18
+const TokenUnitSeparator int = 19
 
 // Token a token from the program
 type Token struct {

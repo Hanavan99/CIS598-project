@@ -1,6 +1,9 @@
 package optimizer
 
-import "math"
+import (
+	"math"
+	"fmt"
+)
 
 type ParseTreeExpressionExponent struct {
 	base     ParseTreeExpression
@@ -20,5 +23,5 @@ func (ptee ParseTreeExpressionExponent) HasKnownValue(env Environment) bool {
 }
 
 func (ptee ParseTreeExpressionExponent) ToString() string {
-	return ptee.base.ToString() + " ^ " + ptee.exponent.ToString()
+	return fmt.Sprintf("(%s ^ %s)", ptee.base.ToString(), ptee.exponent.ToString())
 }
