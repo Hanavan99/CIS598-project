@@ -29,7 +29,11 @@ func main() {
 	}
 
 	for i, v := range tree.Children() {
-		fmt.Printf("%d: %s\n", i, v.(optimizer.ParseTreeUnit).Name)
+		unit, ok := v.(optimizer.ParseTreeUnit)
+		if ok {
+			fmt.Printf("%d: %s\n", i, unit.Name)
+		}
+
 	}
 
 	fmt.Println("==========       DONE       ==========")

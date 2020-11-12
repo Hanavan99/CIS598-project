@@ -1,7 +1,6 @@
 unit kg;
 unit m;
 unit s;
-unit a = 2 4 + 5;
 unit g = 0.001 kg;
 unit cm = 0.01 m;
 
@@ -24,7 +23,7 @@ assembly rocket {
 	}
 }
 
-summarize mat;
-summarize length;
+summarize rocket.nosecone.mat;
+summarize rocket.nosecone.length;
 
 solve rocket.nosecone.mass = 300 g;
