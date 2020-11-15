@@ -13,17 +13,15 @@ enum material {
 
 assembly rocket {
 	assembly body {
-		property radius : m = 4 cm;
+		property radius : m; = 4;
 	}
 
 	assembly nosecone {
 		property mat : material;
 		property length : m;
-		property mass : kg = mat.density * (pi * length * rocket.body.radius ^ 2) / 3;
+		property mass : kg; = rocket.nosecone.mat.density * (pi * rocket.nosecone.length * rocket.body.radius ^ 2) / 3;
 	}
 }
 
 summarize rocket.nosecone.mat;
 summarize rocket.nosecone.length;
-
-solve set rocket.nosecone.mass = 300 g;

@@ -11,5 +11,8 @@ func (pta ParseTreeAssembly) Children() []ParseTree {
 	for _, v := range pta.props {
 		children = append(children, v)
 	}
+	for _, v := range pta.subassemblies {
+		children = append(children, v)
+	}
 	return children
 }

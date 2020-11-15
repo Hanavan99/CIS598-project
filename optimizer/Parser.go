@@ -176,15 +176,40 @@ func parseProperty(token *list.Element, tree ParseTreeRoot) (*list.Element, Pars
 		// check to see if the next token is a ":"
 		if tokenID(token) == TokenUnitSeparator {
 			token = token.Next()
+
+			// parse the given units
 			_token, units, err := ParseExpression(token, tree, nil)
 			token = _token
 			if err != nil {
 				return token, ParseTreeProperty{}, err
 			}
-			fmt.Println(units.ToString())
+			log.Printf("property \"%s\" has units \"%s\"\n", name, units.ToString())
+
+			
+			fmt.Println(tokenContent(token))
 
 			// check to see if there is an ending ";"
 			if tokenID(token) == TokenStatementTerminator {
+				//
+
+				// check if there is an "=" sign, indicating an expression follows
+				if tokenID(token.Next()) == TokenOperatorEquals {
+					token = token.Next() // discard ";" between unit expression and "="
+
+					_token, value, err := ParseExpression(token, tree, nil)
+					token = _token
+					if err != nil {
+						return token, ParseTreeProperty{}, err
+					}
+	
+					// check if there is a ";"
+					if tokenID(token) == TokenStatementTerminator {
+						log.Printf("property \"%s\" has value \"%s\"\n", name, value.ToString())
+						return token, ParseTreeProperty{name, value, units}, nil
+					}
+					return token, ParseTreeProperty{}, fmt.Errorf("\";\" expected but \"%s\" given at position %d", tokenContent(token), tokenPos(token))
+				}
+
 				log.Printf("parsed property \"%s\"\n", name)
 				return token, ParseTreeProperty{name, nil, units}, nil
 			}
@@ -229,8 +254,8 @@ func parseEnum(token *list.Element, tree ParseTreeRoot) (*list.Element, ParseTre
 						// check to see if the next token is an identifier (the name of the value)
 						if tokenID(token) == TokenIdentifier {
 							valueName := tokenContent(token)
-							valueValues := make([]float64, len(props))
-							valueUnits := make([]ParseTreeExpression, len(props))
+							valueValues := make([]ParseTreeProperty, len(props))
+							//valueUnits := make([]ParseTreeExpression, len(props))
 							token = token.Next()
 
 							// check to see if the next token is a "("
@@ -243,7 +268,7 @@ func parseEnum(token *list.Element, tree ParseTreeRoot) (*list.Element, ParseTre
 									// check to see if the next token is a number
 									if tokenID(token) == TokenNumber {
 										v, _ := strconv.ParseFloat(tokenContent(token), 64)
-										valueValues[i] = v
+										
 
 										token = token.Next()
 										newToken, units, err := ParseExpression(token, tree, nil)
@@ -252,7 +277,7 @@ func parseEnum(token *list.Element, tree ParseTreeRoot) (*list.Element, ParseTre
 											return token, ParseTreeEnum{}, err
 										}
 
-										valueUnits[i] = units
+										valueValues[i] = ParseTreeProperty{props[i].Name, ParseTreeExpressionConstant{v}, units}
 									} else {
 										return token, ParseTreeEnum{}, fmt.Errorf("number expected but \"%s\" given at position %d", tokenContent(token), tokenPos(token))
 									}
@@ -262,7 +287,7 @@ func parseEnum(token *list.Element, tree ParseTreeRoot) (*list.Element, ParseTre
 
 								token = token.Next()
 								if tokenID(token) == TokenStatementTerminator {
-									values[valueName] = ParseTreeEnumValue{valueName, valueValues, valueUnits}
+									values[valueName] = ParseTreeEnumValue{valueName, valueValues}
 									log.Printf("parsed value \"%s\"\n", valueName)
 								} else {
 									return token, ParseTreeEnum{}, fmt.Errorf("\";\" expected but \"%s\" given at position %d", tokenContent(token), tokenPos(token))

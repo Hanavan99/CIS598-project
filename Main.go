@@ -37,6 +37,19 @@ func main() {
 
 	}
 
+	fmt.Println("==========  SOLVER  OUTPUT  ==========")
+
+	env := optimizer.CreateEnvironment(tree)
+	env.Put("pi", 3.1415926535)
+	env.Put("rocket.nosecone.length", 20.0)
+	env.Put("rocket.nosecone.mat", "ABS")
+	val, err := optimizer.Evaluate(tree, "rocket.nosecone.mass", env)
+	if err != nil {
+		log.Fatalf("evaluation error: %s\n", err.Error())
+	} else {
+		fmt.Printf("result: %f\n", val)
+	}
+
 	fmt.Println("==========       DONE       ==========")
 
 	/*s := optimizer.Stack{}
