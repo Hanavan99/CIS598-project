@@ -1,0 +1,11 @@
+unit m;
+
+assembly sphere {
+
+    property x : m;
+    property y : m;
+    property height : m; = (sphere.x - 5) ^ 2 + sphere.y * sphere.y;
+
+}
+
+solve minimize sphere.height;

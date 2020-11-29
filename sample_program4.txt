@@ -1,0 +1,12 @@
+unit m;
+
+assembly test {
+
+    property x : m;
+    property f : m; = (test.x ^ 2) + 2 * test.x + 6;
+
+}
+
+summarize test.x;
+
+solve minimize test.f;

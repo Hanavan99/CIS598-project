@@ -1,0 +1,26 @@
+unit m;
+unit kg;
+unit s;
+
+assembly solar_system {
+
+    property G : (m ^ 3) / (kg * (s ^ 2)); = 6.67408e-11;
+
+    assembly sun {
+        property position : m; = 0;
+        property mass : kg; = 1.989e30;
+    }
+
+    assembly earth {
+        property position : m; = 147.68e9;
+        property mass : kg; = 5.972e24;
+    }
+
+    assembly satellite {
+        property position : m;
+        property acceleration : m/s^2; = solar_system.G * solar_system.earth.mass / (solar_system.earth.position - solar_system.satellite.position) ^ 2 + solar_system.G * solar_system.sun.mass / (solar_system.satellite.position ^ 2);
+    }
+
+}
+
+solve minimize solar_system.satellite.acceleration;
