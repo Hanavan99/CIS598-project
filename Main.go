@@ -5,65 +5,91 @@ import (
 	"io/ioutil"
 	"optimizer"
 	"log"
+	"os"
 )
+
+/*
+============================== TODO ==============================
+1. Implement GetUnboundProperties() function          DONE
+2. Get multivariate Newton's Method implemented
+3. Make optimizer obey summarize statements
+4. Get gradient descent/ascent implemented            DONE
+5. Get unit conversions implemented
+6. Implement error checking on parse tree
+7. Accept file name from command line                 DONE
+8. Allow for non fully qualified name resolution
+9. Fix expression parsing to not require ";"
+10. Allow user to adjust parameters to GD algorithm
+11. Fix tokenizer to handle negative numbers
+============================== ==== ==============================
+*/
 
 func main() {
 
-	dat, _ := ioutil.ReadFile("../sample_program.txt")
-	//fmt.Println(dat)
-	tokens := optimizer.Tokenize(string(dat))
+	// initialize logger
+	optimizer.InitLoggers()
 
-	funcDefs := make(map[string]int)
-	funcDefs["sin"] = 1
+	// get command line arguments
+	args := os.Args[1:]
 
-	fmt.Println("========== TOKENIZER OUTPUT ==========")
-	token := tokens.Front()
-	for token != nil {
-		print(token.Value.(optimizer.Token).ID, "\t", token.Value.(optimizer.Token).Position, "\t\"", token.Value.(optimizer.Token).Content, "\"\n")
-		token = token.Next()
-	}
+	// check for file name argument
+	if len(args) >= 1 {
 
-	fmt.Println("==========  PARSER  OUTPUT  ==========")
-	tree, err := optimizer.Parse(tokens, funcDefs)
-	if err != nil {
-		log.Fatalf("parse error: %s\n", err.Error())
-	}
-
-	for i, v := range tree.Children() {
-		unit, ok := v.(optimizer.ParseTreeUnit)
-		if ok {
-			fmt.Printf("%d: %s\n", i, unit.Name)
+		// read in file
+		dat, err := ioutil.ReadFile(args[0])
+		if err != nil {
+			fmt.Printf("%s\n", err.Error())
+			os.Exit(1)
 		}
 
-	}
+		// convert file contents into linked list of tokens
+		tokens := optimizer.Tokenize(string(dat))
 
-	fmt.Println("==========  SOLVER  OUTPUT  ==========")
+		// define expression function arities
+		funcDefs := make(map[string]int)
+		funcDefs["sin"] = 1
 
-	env := optimizer.CreateEnvironment(tree)
-	env.Put("pi", 3.1415926535)
-	env.Put("rocket.nosecone.length", 20.0)
-	env.Put("rocket.nosecone.mat", "ABS")
-	val, err := optimizer.Evaluate(tree, "rocket.nosecone.mass", env)
-	if err != nil {
-		log.Fatalf("evaluation error: %s\n", err.Error())
+		fmt.Println("========== TOKENIZER OUTPUT ==========")
+		token := tokens.Front()
+		for token != nil {
+			print(token.Value.(optimizer.Token).ID, "\t", token.Value.(optimizer.Token).Position, "\t\"", token.Value.(optimizer.Token).Content, "\"\n")
+			token = token.Next()
+		}
+
+		fmt.Println("==========  PARSER  OUTPUT  ==========")
+		tree, err := optimizer.Parse(tokens, funcDefs)
+		if err != nil {
+			fmt.Printf("parse error: %s\n", err.Error())
+			os.Exit(1)
+		}
+
+		/*for i, v := range tree.Children() {
+			unit, ok := v.(optimizer.ParseTreeUnit)
+			if ok {
+				fmt.Printf("%d: %s\n", i, unit.Name)
+			}
+
+		}*/
+
+		//log.SetOutput(ioutil.Discard)
+
+		fmt.Println("==========  SOLVER  OUTPUT  ==========")
+
+		props := optimizer.GetUnboundProperties(tree)
+		fmt.Printf("Unbound properties: %s\n", props)
+
+		env := optimizer.CreateEnvironment(tree)
+		err = optimizer.Solve(tree, env)
+		if err != nil {
+			log.Fatal(err)
+		}
+		/*for k, v := range env.GetMap() {
+			fmt.Printf("property \"%s\" = \"%.20f\"\n", k, v)
+		}*/
+
+		fmt.Println("==========       DONE       ==========")
 	} else {
-		fmt.Printf("result: %f\n", val)
+		fmt.Printf("not enough arguments! usage: ./optimizer file_name\n")
 	}
-
-	fmt.Println("==========       DONE       ==========")
-
-	/*s := optimizer.Stack{}
-	s.Push(3)
-	s.Push(6)
-	//s.Pop()
-	s = s.Reverse()
-	for i, v := range s.Slice() {
-		fmt.Printf("%d: %d\n", i, v)
-	}
-
-	_, _, err := optimizer.ParseExpression(tokens.Front(), optimizer.ParseTreeRoot{}, funcDefs)
-	if err != nil {
-		fmt.Println(err.Error())
-	}*/
 
 }

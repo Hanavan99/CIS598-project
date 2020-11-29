@@ -71,7 +71,7 @@ func Tokenize(str string) *list.List {
 			} else {
 				panic("Don't know what happens here")
 			}
-		} else if (c >= '0' && c < '9') || c == '.' {
+		} else if (c >= '0' && c <= '9') || c == '.' {
 			if tokenType == 0 {
 				tokenType = TokenNumber
 				curTokenPos = i
@@ -79,12 +79,16 @@ func Tokenize(str string) *list.List {
 			curToken += string(c)
 		} else if c == '-' {
 			// could be negative number or subtraction
-			if tokenType != 0 {
-				tokens.PushBack(Token{tokenType, curTokenPos, curToken})
+			if len(curToken) > 1 && curToken[len(curToken) - 1] == 'e' {
+				curToken += string(c)
+			} else {
+				if tokenType != 0 {
+					tokens.PushBack(Token{tokenType, curTokenPos, curToken})
+				}
+				tokens.PushBack(Token{TokenOperatorSubtract, i, string(c)})
+				curToken = ""
+				tokenType = 0
 			}
-			tokens.PushBack(Token{TokenOperatorSubtract, i, string(c)})
-			curToken = ""
-			tokenType = 0
 		} else if c == '=' {
 			if tokenType != 0 {
 				tokens.PushBack(Token{tokenType, curTokenPos, curToken})

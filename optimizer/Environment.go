@@ -12,6 +12,14 @@ func CreateEnvironment(tree ParseTreeRoot) Environment {
 	return Environment{make(map[string]interface{}), tree}
 }
 
+func (env Environment) Clone() Environment {
+	newmap := make(map[string]interface{})
+	for k, v := range env.env {
+		newmap[k] = v
+	}
+	return Environment{newmap, env.tree}
+}
+
 func (env Environment) Exists(key string) bool {
 	_, exists := env.env[key]
 	if !exists {
@@ -38,4 +46,8 @@ func (env Environment) Get(key string) interface{} {
 
 func (env Environment) Put(key string, value interface{}) {
 	env.env[key] = value
+}
+
+func (env Environment) GetMap() map[string]interface{} {
+	return env.env
 }

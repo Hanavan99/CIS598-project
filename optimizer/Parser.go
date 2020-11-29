@@ -375,6 +375,16 @@ func BuildExpression(outputQueue *Stack, funcDefs map[string]int) (ParseTreeExpr
 			return nil, err
 		}
 		return ParseTreeExpressionAdd{left, right}, nil
+	case TokenOperatorSubtract:
+		right, err := BuildExpression(outputQueue, funcDefs)
+		if err != nil {
+			return nil, err
+		}
+		left, err := BuildExpression(outputQueue, funcDefs)
+		if err != nil {
+			return nil, err
+		}
+		return ParseTreeExpressionSubtract{left, right}, nil
 	case TokenOperatorMultiply:
 		right, err := BuildExpression(outputQueue, funcDefs)
 		if err != nil {
@@ -418,15 +428,15 @@ func ParseExpression(token *list.Element, tree ParseTreeRoot, funcDefs map[strin
 		case TokenNumber:
 			//num, _ := strconv.Atoi(tokenContent(token))
 			outputQueue.Push(token.Value)
-			//fmt.Printf("pushed number %s to output queue\n", tokenContent(token))
+			log.Printf("pushed number %s to output queue\n", tokenContent(token))
 			break
 		case TokenIdentifier:
 			if tokenID(token.Next()) == TokenParenthesisOpen {
 				operatorStack.Push(token.Value) // it is a function
-				//fmt.Printf("pushed function \"%s\" to operator stack\n", tokenContent(token))
+				log.Printf("pushed function \"%s\" to operator stack\n", tokenContent(token))
 			} else {
 				outputQueue.Push(token.Value) // it is a variable/unit name
-				//fmt.Printf("pushed variable/unit \"%s\" to output queue\n", tokenContent(token))
+				log.Printf("pushed variable/unit \"%s\" to output queue\n", tokenContent(token))
 			}
 			break
 		case TokenOperatorAdd, TokenOperatorSubtract, TokenOperatorMultiply, TokenOperatorDivide, TokenOperatorExponent:
@@ -439,31 +449,31 @@ func ParseExpression(token *list.Element, tree ParseTreeRoot, funcDefs map[strin
 				var equalPrecedence = operatorPrecedence(operatorStack.Peek().(Token).ID) == operatorPrecedence(tokenID)
 				var leftAssoc = isLeftAssociative(tokenID)
 				var leftParen = operatorStack.Peek().(Token).ID == TokenParenthesisOpen
-				//fmt.Printf("op=%d isOp=%t greaterPrecedence=%t equalPrecedence=%t leftAssoc=%t leftParen=%t\n", operatorStack.Peek().(Token).ID, isop, greaterPrecedence, equalPrecedence, leftAssoc, leftParen)
+				log.Printf("op=%d isOp=%t greaterPrecedence=%t equalPrecedence=%t leftAssoc=%t leftParen=%t\n", operatorStack.Peek().(Token).ID, isop, greaterPrecedence, equalPrecedence, leftAssoc, leftParen)
 				if (isop) && ((greaterPrecedence) || (equalPrecedence && leftAssoc)) && (!leftParen) {
 					var poppedToken = operatorStack.Pop()
 					outputQueue.Push(poppedToken)
-					//fmt.Printf("popped operator %s from stack and pushed to output queue\n", poppedToken.(Token).Content)
+					log.Printf("popped operator %s from stack and pushed to output queue\n", poppedToken.(Token).Content)
 				} else {
 					break
 				}
 			}
 
 			operatorStack.Push(token.Value)
-			//fmt.Printf("pushed operator %s to operator stack\n", tokenContent(token))
+			log.Printf("pushed operator %s to operator stack\n", tokenContent(token))
 			break
 		case TokenParenthesisOpen:
 			operatorStack.Push(token.Value)
-			//fmt.Printf("pushed ( to operator stack\n")
+			log.Printf("pushed ( to operator stack\n")
 			break
 		case TokenParenthesisClose:
 			//fmt.Println("handling )")
 			for operatorStack.Peek() != nil && operatorStack.Peek().(Token).ID != TokenParenthesisOpen {
 				var poppedToken = operatorStack.Pop()
 				outputQueue.Push(poppedToken)
-				//fmt.Printf("popped operator %s from stack and pushed to output queue\n", poppedToken.(Token).Content)
+				log.Printf("popped operator %s from stack and pushed to output queue\n", poppedToken.(Token).Content)
 			}
-			//fmt.Printf("popped operator ( from stack\n")
+			log.Printf("popped operator ( from stack\n")
 			operatorStack.Pop() // remove open parenthesis
 			// TODO check for mismatched parenthesis
 			break
