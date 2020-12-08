@@ -4,7 +4,6 @@ import (
 	"container/list"
 	"fmt"
 	"strconv"
-	"log"
 )
 
 func tokenID(token *list.Element) int {
@@ -183,10 +182,10 @@ func parseProperty(token *list.Element, tree ParseTreeRoot) (*list.Element, Pars
 			if err != nil {
 				return token, ParseTreeProperty{}, err
 			}
-			log.Printf("property \"%s\" has units \"%s\"\n", name, units.ToString())
+			DebugLogger.Printf("property \"%s\" has units \"%s\"\n", name, units.ToString())
 
 			
-			fmt.Println(tokenContent(token))
+			DebugLogger.Println(tokenContent(token))
 
 			// check to see if there is an ending ";"
 			if tokenID(token) == TokenStatementTerminator {
@@ -204,13 +203,13 @@ func parseProperty(token *list.Element, tree ParseTreeRoot) (*list.Element, Pars
 	
 					// check if there is a ";"
 					if tokenID(token) == TokenStatementTerminator {
-						log.Printf("property \"%s\" has value \"%s\"\n", name, value.ToString())
+						DebugLogger.Printf("property \"%s\" has value \"%s\"\n", name, value.ToString())
 						return token, ParseTreeProperty{name, value, units}, nil
 					}
 					return token, ParseTreeProperty{}, fmt.Errorf("\";\" expected but \"%s\" given at position %d", tokenContent(token), tokenPos(token))
 				}
 
-				log.Printf("parsed property \"%s\"\n", name)
+				DebugLogger.Printf("parsed property \"%s\"\n", name)
 				return token, ParseTreeProperty{name, nil, units}, nil
 			}
 			return token, ParseTreeProperty{}, fmt.Errorf("\";\" expected but \"%s\" given at position %d", tokenContent(token), tokenPos(token))
@@ -288,7 +287,7 @@ func parseEnum(token *list.Element, tree ParseTreeRoot) (*list.Element, ParseTre
 								token = token.Next()
 								if tokenID(token) == TokenStatementTerminator {
 									values[valueName] = ParseTreeEnumValue{valueName, valueValues}
-									log.Printf("parsed value \"%s\"\n", valueName)
+									DebugLogger.Printf("parsed value \"%s\"\n", valueName)
 								} else {
 									return token, ParseTreeEnum{}, fmt.Errorf("\";\" expected but \"%s\" given at position %d", tokenContent(token), tokenPos(token))
 								}
@@ -303,7 +302,7 @@ func parseEnum(token *list.Element, tree ParseTreeRoot) (*list.Element, ParseTre
 
 				token = token.Next()
 			}
-			log.Printf("parsed enum \"%s\"\n", name)
+			DebugLogger.Printf("parsed enum \"%s\"\n", name)
 			return token, ParseTreeEnum{name, props, values}, nil
 		}
 		return token, ParseTreeEnum{}, fmt.Errorf("\"{property}\" expected but \"%s\" given at position %d", tokenContent(token), tokenPos(token))
@@ -320,7 +319,7 @@ func parseUnit(token *list.Element, tree ParseTreeRoot, funcDefs map[string]int)
 	token = token.Next()
 
 	if tokenID(token) == TokenStatementTerminator {
-		log.Println("parsed unit \"" + name + "\"")
+		DebugLogger.Println("parsed unit \"" + name + "\"")
 		return token, ParseTreeUnit{name, 1, nil}, nil
 	} else if tokenID(token) == TokenOperatorEquals {
 		token = token.Next()
@@ -330,7 +329,7 @@ func parseUnit(token *list.Element, tree ParseTreeRoot, funcDefs map[string]int)
 				return nil, ParseTreeUnit{}, fmt.Errorf("number expected but \"%s\" given at position %d", tokenContent(token), tokenPos(token))
 			}
 			token, exp, err := ParseExpression(token.Next(), tree, funcDefs)
-			fmt.Printf("declared unit \"%s\" = %f %s\n", name, multiplier, exp.ToString())
+			DebugLogger.Printf("declared unit \"%s\" = %f %s\n", name, multiplier, exp.ToString())
 			return token, ParseTreeUnit{name, multiplier, exp}, err
 		}
 		return token, ParseTreeUnit{}, fmt.Errorf("number expected but \"%s\" given at position %d", tokenContent(token), tokenPos(token))
@@ -428,15 +427,15 @@ func ParseExpression(token *list.Element, tree ParseTreeRoot, funcDefs map[strin
 		case TokenNumber:
 			//num, _ := strconv.Atoi(tokenContent(token))
 			outputQueue.Push(token.Value)
-			log.Printf("pushed number %s to output queue\n", tokenContent(token))
+			DebugLogger.Printf("pushed number %s to output queue\n", tokenContent(token))
 			break
 		case TokenIdentifier:
 			if tokenID(token.Next()) == TokenParenthesisOpen {
 				operatorStack.Push(token.Value) // it is a function
-				log.Printf("pushed function \"%s\" to operator stack\n", tokenContent(token))
+				DebugLogger.Printf("pushed function \"%s\" to operator stack\n", tokenContent(token))
 			} else {
 				outputQueue.Push(token.Value) // it is a variable/unit name
-				log.Printf("pushed variable/unit \"%s\" to output queue\n", tokenContent(token))
+				DebugLogger.Printf("pushed variable/unit \"%s\" to output queue\n", tokenContent(token))
 			}
 			break
 		case TokenOperatorAdd, TokenOperatorSubtract, TokenOperatorMultiply, TokenOperatorDivide, TokenOperatorExponent:
@@ -449,31 +448,31 @@ func ParseExpression(token *list.Element, tree ParseTreeRoot, funcDefs map[strin
 				var equalPrecedence = operatorPrecedence(operatorStack.Peek().(Token).ID) == operatorPrecedence(tokenID)
 				var leftAssoc = isLeftAssociative(tokenID)
 				var leftParen = operatorStack.Peek().(Token).ID == TokenParenthesisOpen
-				log.Printf("op=%d isOp=%t greaterPrecedence=%t equalPrecedence=%t leftAssoc=%t leftParen=%t\n", operatorStack.Peek().(Token).ID, isop, greaterPrecedence, equalPrecedence, leftAssoc, leftParen)
+				DebugLogger.Printf("op=%d isOp=%t greaterPrecedence=%t equalPrecedence=%t leftAssoc=%t leftParen=%t\n", operatorStack.Peek().(Token).ID, isop, greaterPrecedence, equalPrecedence, leftAssoc, leftParen)
 				if (isop) && ((greaterPrecedence) || (equalPrecedence && leftAssoc)) && (!leftParen) {
 					var poppedToken = operatorStack.Pop()
 					outputQueue.Push(poppedToken)
-					log.Printf("popped operator %s from stack and pushed to output queue\n", poppedToken.(Token).Content)
+					DebugLogger.Printf("popped operator %s from stack and pushed to output queue\n", poppedToken.(Token).Content)
 				} else {
 					break
 				}
 			}
 
 			operatorStack.Push(token.Value)
-			log.Printf("pushed operator %s to operator stack\n", tokenContent(token))
+			DebugLogger.Printf("pushed operator %s to operator stack\n", tokenContent(token))
 			break
 		case TokenParenthesisOpen:
 			operatorStack.Push(token.Value)
-			log.Printf("pushed ( to operator stack\n")
+			DebugLogger.Printf("pushed ( to operator stack\n")
 			break
 		case TokenParenthesisClose:
 			//fmt.Println("handling )")
 			for operatorStack.Peek() != nil && operatorStack.Peek().(Token).ID != TokenParenthesisOpen {
 				var poppedToken = operatorStack.Pop()
 				outputQueue.Push(poppedToken)
-				log.Printf("popped operator %s from stack and pushed to output queue\n", poppedToken.(Token).Content)
+				DebugLogger.Printf("popped operator %s from stack and pushed to output queue\n", poppedToken.(Token).Content)
 			}
-			log.Printf("popped operator ( from stack\n")
+			DebugLogger.Printf("popped operator ( from stack\n")
 			operatorStack.Pop() // remove open parenthesis
 			// TODO check for mismatched parenthesis
 			break

@@ -1,12 +1,14 @@
 unit m;
+unit s;
 
-assembly test {
+assembly cannonball {
 
-    property x : m;
-    property f : m; = (test.x ^ 2) + 2 * test.x + 6;
+    property xvelocity : m/s; = 125;
+    property yvelocity : m/s; = 105;
+    property time : s;
+    property xpos : m; = cannonball.xvelocity * cannonball.time;
+    property ypos : m; = 0.5 * (0 - 4.81) * cannonball.time * cannonball.time + cannonball.yvelocity * cannonball.time;
 
 }
 
-summarize test.x;
-
-solve minimize test.f;
+solve maximize cannonball.ypos;

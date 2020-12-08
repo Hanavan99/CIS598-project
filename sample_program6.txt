@@ -1,0 +1,13 @@
+unit ft;
+
+assembly can {
+
+    property height : m;
+    property radius : m;
+    property circumference : m; = 2 * pi * can.radius;
+    property volume : m^3; => can.height * pi * can.radius ^ 2 = 1.5;
+    property surface_area : m^2 = (can.height * can.circumference) + (pi * can.radius ^ 2);
+
+}
+
+solve minimize can.surface_area;

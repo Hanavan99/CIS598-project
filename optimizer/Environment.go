@@ -1,7 +1,5 @@
 package optimizer
 
-import "log"
-
 // Environment associates variables with values, as well as a way to look up values in the tree
 type Environment struct {
 	env map[string]interface{}
@@ -32,7 +30,7 @@ func (env Environment) Exists(key string) bool {
 }
 
 func (env Environment) Get(key string) interface{} {
-	log.Printf("looking up key \"%s\" in environment\n", key)
+	DebugLogger.Printf("looking up key \"%s\" in environment\n", key)
 	ret, exists := env.env[key]
 	if !exists {
 		prop, err := resolveProperty(env.tree, env.tree, key, env)

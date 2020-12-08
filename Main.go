@@ -42,6 +42,8 @@ func main() {
 			os.Exit(1)
 		}
 
+		fmt.Println("========== TOKENIZER OUTPUT ==========")
+
 		// convert file contents into linked list of tokens
 		tokens := optimizer.Tokenize(string(dat))
 
@@ -49,12 +51,12 @@ func main() {
 		funcDefs := make(map[string]int)
 		funcDefs["sin"] = 1
 
-		fmt.Println("========== TOKENIZER OUTPUT ==========")
-		token := tokens.Front()
+		
+		/*token := tokens.Front()
 		for token != nil {
 			print(token.Value.(optimizer.Token).ID, "\t", token.Value.(optimizer.Token).Position, "\t\"", token.Value.(optimizer.Token).Content, "\"\n")
 			token = token.Next()
-		}
+		}*/
 
 		fmt.Println("==========  PARSER  OUTPUT  ==========")
 		tree, err := optimizer.Parse(tokens, funcDefs)

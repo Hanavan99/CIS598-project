@@ -51,6 +51,14 @@ func Solve(tree ParseTreeRoot, env Environment) error {
 				if err != nil {
 					return err
 				}
+				break
+			case "maximize":
+				DebugLogger.Printf("using maximize function\n")
+			    /*err :=*/ maximize(tree, env, solve.Parameter, unboundProps, 1e-4)
+				if err != nil {
+					return err
+				}
+				break
 			}
 			return nil // quit out of loop
 		}
@@ -211,6 +219,49 @@ func minimize3(tree ParseTreeRoot, env Environment, prop string, args []string, 
 	fmt.Printf("minimum value = %f\n", result.F)
 }
 
+func maximize(tree ParseTreeRoot, env Environment, prop string, args []string, step float64) {
+
+	optimizefunc := func(x []float64) float64 {
+		tmpmap := make(map[string]interface{})
+		copy(env.env, &tmpmap)
+		for i, v := range args {
+			tmpmap[v] = x[i]
+		}
+		val, _ := Evaluate(tree, prop, Environment{tmpmap, tree})
+		return -val
+	}
+
+	gradfunc := func(grad, x []float64) {
+		cx := make([]float64, len(x))
+		for i := 0; i < len(x); i++ {
+			cx[i] = x[i]
+		}
+		for i := 0; i < len(x); i++ {
+			cx[i] += step
+			grad[i] = (optimizefunc(cx) - optimizefunc(x)) / step
+			cx[i] -= step
+		}
+	}
+
+	p := optimize.Problem {
+		Func: optimizefunc,
+		Grad: gradfunc,
+	}
+
+	x := make([]float64, len(args))
+	for i, _ := range x {
+		x[i] = 1
+	}
+
+	result, err := optimize.Minimize(p, x, nil, nil)
+	if err != nil {
+		DebugLogger.Fatal(err)
+	}
+	for i, v := range args {
+		fmt.Printf("%s = %f\n", v, result.X[i])
+	}
+	fmt.Printf("maximum value = %f\n", -result.F)
+}
 
 
 func minimize(tree ParseTreeRoot, env Environment, prop string, args []string, step float64, t float64) error {
